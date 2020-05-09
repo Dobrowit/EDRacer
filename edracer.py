@@ -3,7 +3,6 @@ import sys
 import time
 import ctypes
 import math
-import time
 from random import seed
 from random import randint
 from tkinter import *
@@ -15,6 +14,19 @@ if os.environ['OS'] == 'Windows_NT':
     STATUS_FILE = "C:\\Users\\Radek\\Saved Games\\Frontier Developments\\Elite Dangerous\\Status.json"
 else:
     exit()
+
+mute = 0
+
+def muteSnd(event):
+    global mute
+    print(mute)
+    if mute == 0:
+        mute = 1
+        print("Mute")
+    else:
+        mute = 0
+        print("Unmute")
+        makeSound(7)
 
 def makeSound(event):
     filename = [["thunder.wav"],
@@ -33,117 +45,8 @@ def makeSound(event):
     else:
         fn = filename[event][0]
 
-    winsound.PlaySound(fn, winsound.SND_ASYNC)
-
-## GUI
-
-x, y = 0, 0
-
-def startMove(event):
-    global x, y
-    x = event.x
-    y = event.y
-def stopMove(event):
-    global x, y
-    x = None
-    y = None
-def moving(event):
-    global x, y
-    x_ = (event.x_root - x)
-    y_ = (event.y_root - y)
-    root.geometry("+%s+%s" % (x_, y_))
-def frame_mapped(e):
-    root.update_idletasks()
-    root.overrideredirect(True)
-    root.state('normal')
-def minimize(event):
-    root.update_idletasks()
-    root.overrideredirect(False)
-    #root.state('withdrawn')
-    root.state('iconic')
-def exitProgram(event):
-    os._exit(0)
-def hover(event):
-    event.widget.config(bg="red")
-def unhover(event):
-    event.widget.config(bg="black")
-def hoverMin(event):
-    event.widget.config(bg="grey")
-def unHoverMin(event):
-    event.widget.config(bg="black")
-
-root = Tk()
-root.title("EDRacer - you navigatorand stopwatch")
-root.geometry("700x140")
-root.iconbitmap('favicon.ico')
-root.overrideredirect(True)
-root.attributes('-topmost', True)
-
-borderFrame = Frame(root, width=700, height=140, bg="black")
-borderFrame.pack_propagate(False)
-borderFrame.pack(side=TOP)
-borderFrame.bind("<Button-1>", startMove)
-borderFrame.bind("<ButtonRelease-1>", stopMove)
-borderFrame.bind("<B1-Motion>", moving)
-borderFrame.bind("<Map>", frame_mapped)
-
-close = Label(root, font=("Arial", 11), bg="black", fg="orange", anchor=CENTER, text="X", cursor="hand2")
-close.place(x=680, y=0, width=20, height=20)
-close.bind("<Enter>", hover)
-close.bind("<Leave>", unhover)
-close.bind("<Button-1>", exitProgram)
-
-holderFrame = Frame(borderFrame, width=700, height=120, bg="black")
-holderFrame.pack_propagate(False)
-holderFrame.pack(side=BOTTOM)
-
-msg1 = StringVar()
-msg1.set("EDRacer")
-lab1 = Label(root,
-            textvariable = msg1,
-            font = ("Courier New", 20),
-            bg = "black",
-            fg = "orange")
-lab1.place(x = 0, y = 20, width = 700, height = 40)
-
-msg2 = StringVar()
-msg2.set("Witaj komandorze")
-lab2 = Label(root,
-            textvariable = msg2,
-            font = ("Courier New", 20),
-            bg = "black",
-            fg = "orange")
-lab2.place(x = 0, y = 60, width = 700, height = 40)
-
-msg3 = StringVar()
-msg3.set("o7")
-lab3 = Label(root,
-            textvariable = msg3,
-            font = ("Courier New", 20),
-            bg = "black",
-            fg = "orange")
-lab3.place(x = 0, y = 100, width = 700, height = 40)
-
-root.update_idletasks()
-
-def msg(line, text):
-    if line == 1:
-        msg1.set(text)
-    elif line == 2:
-        msg2.set(text)
-    elif line == 3:
-        msg3.set(text)
-    root.update()
-
-def guiPause(sec):
-    i = 0
-    sec = sec * 10
-    while i < sec:
-        i = i + 1
-        root.update()
-        time.sleep(0.1)
-        
-## GUI END
+    if mute == 0:
+        winsound.PlaySound(fn, winsound.SND_ASYNC)
 
 c_uint8 = ctypes.c_uint8
 c_uint32 = ctypes.c_uint32
@@ -247,54 +150,52 @@ def readedstat():
         edstatus = 0
     return(edstatus)
 
-def printstatus():
+def printstatus(event):
     edstatus = readedstat()
     if edstatus != 0:
         status_flags.as_integer = edstatus['Flags']
-        print("timestamp: " + str(edstatus['timestamp']))
+        print("========== timestamp: {} ==========".format(str(edstatus['timestamp'])))
         if edstatus['Flags'] > 0:
-            print("Flags:")
-            print("  alt_ar " + str(status_flags.alt_ar))
-            print("  cargo_scoop: " + str(status_flags.cargo_scoop))
-            print("  fa_off: " + str(status_flags.fa_off))
-            print("  fsd_charge: " + str(status_flags.fsd_charge))
-            print("  fsd_cool: " + str(status_flags.fsd_cool))
-            print("  fsd_jump: " + str(status_flags.fsd_jump))
-            print("  fsd_masslock: " + str(status_flags.fsd_masslock))
-            print("  fuel_scoop: " + str(status_flags.fuel_scoop))
-            print("  hardpoints: " + str(status_flags.hardpoints))
-            print("  has_lat_long: " + str(status_flags.has_lat_long)) ## jstem na planecie i mam współrzędne
-            print("  in_danger: " + str(status_flags.in_danger)) ## jestem pod ostrzałem
-            print("  in_fighter: " + str(status_flags.in_fighter))
-            print("  in_ship: " + str(status_flags.in_ship))
-            print("  in_srv: " + str(status_flags.in_srv)) ## jestes w srv
-            print("  interdiction: " + str(status_flags.interdiction))
-            print("  landed: " + str(status_flags.landed))
-            print("  landing_gear: " + str(status_flags.landing_gear))
-            print("  lights: " + str(status_flags.lights))
-            print("  low_fuel: " + str(status_flags.low_fuel))
-            print("  night_vision " + str(status_flags.night_vision))
-            print("  overheat: " + str(status_flags.overheat))
-            print("  shields_up: " + str(status_flags.shields_up))
-            print("  silent_run: " + str(status_flags.silent_run))
-            print("  srv_board: " + str(status_flags.srv_board))
-            print("  srv_brake: " + str(status_flags.srv_brake))
-            print("  srv_da: " + str(status_flags.srv_da))
-            print("  srv_hb: " + str(status_flags.srv_hb))
-            print("  srv_turret: " + str(status_flags.srv_turret))
-            print("  supercruise: " + str(status_flags.supercruise))
-            print("  wing: " + str(status_flags.wing))
-            print("Pips: ")
-            print("  SYS: " + str(edstatus['Pips'][0]))
-            print("  ENG: " + str(edstatus['Pips'][1]))
-            print("  WEP: " + str(edstatus['Pips'][2]))
-            print("Fuel: ")
-            print("  FuelMain: " + str(edstatus['Fuel']['FuelMain']))
-            print("  FuelReservoir: " + str(edstatus['Fuel']['FuelReservoir']))
-            print("FireGroup: " + str(edstatus['FireGroup']))
-            print("GuiFocus: " + str(edstatus['GuiFocus']))
-            print("Cargo: " + str(edstatus['Cargo']))
-            print("LegalState: " + edstatus['LegalState'])
+            print("MAINSHIP:")
+            print("  In MainShip: " + str(status_flags.in_ship))
+            print("  Docked on a landing pad: " + str(status_flags.docked))
+            print("  Altitude from Average radius " + str(status_flags.alt_ar))
+            print("  Being Interdicted: " + str(status_flags.interdiction))
+            print("  FlightAssist Off: " + str(status_flags.fa_off))
+            print("  FSD Charging: " + str(status_flags.fsd_charge))
+            print("  FSD Cooldown: " + str(status_flags.fsd_cool))
+            print("  FSD Jump: " + str(status_flags.fsd_jump))
+            print("  FSD MmassLocked: " + str(status_flags.fsd_masslock))
+            print("  Hardpints Deployed : " + str(status_flags.hardpoints))
+            print("  Landed on planet surface: " + str(status_flags.landed))
+            print("  Landing Gear Down: " + str(status_flags.landing_gear))
+            print("  Scoping Fuel: " + str(status_flags.fuel_scoop))
+            print("  Silent Running: " + str(status_flags.silent_run))
+            print("  Supercruise: " + str(status_flags.supercruise))
+            print("  In Fighter: " + str(status_flags.in_fighter))
+            print("  In Wing: " + str(status_flags.wing))
+            print("SRV:")
+            print("  In SRV: " + str(status_flags.in_srv)) ## jestes w srv
+            print("  SRV Turret retracted (close to ship): " + str(status_flags.srv_board))
+            print("  SRV Handbrake: " + str(status_flags.srv_brake))
+            print("  SRV DriveAssist: " + str(status_flags.srv_da))
+            print("  SRV HighBram: " + str(status_flags.srv_hb))
+            print("  SRV using Turret view: " + str(status_flags.srv_turret))
+            print("COMMON:")
+            print("  Is In Danger: " + str(status_flags.in_danger)) ## jestem pod ostrzałem
+            print("  Cargo Scoop Deployed: " + str(status_flags.cargo_scoop))
+            print("  Has Lat Long: " + str(status_flags.has_lat_long)) ## jstem na planecie i mam współrzędne
+            print("  Lights On: " + str(status_flags.lights))
+            print("  Low Fuel (<25%): " + str(status_flags.low_fuel))
+            print("  Night Vision " + str(status_flags.night_vision))
+            print("  Over Heating (>100%): " + str(status_flags.overheat))
+            print("  Shields Up: " + str(status_flags.shields_up))
+            print("  Pips: SYS:{} ENG:{} WEP:{}".format(str(edstatus['Pips'][0]), str(edstatus['Pips'][1]), str(edstatus['Pips'][2])))
+            print("  Fuel: FuelMain: {} | FuelReservoir: {}".format(str(edstatus['Fuel']['FuelMain']), str(edstatus['Fuel']['FuelReservoir'])))
+            print("  FireGroup: " + str(edstatus['FireGroup']))
+            print("  GuiFocus: " + str(edstatus['GuiFocus']))
+            print("  Cargo: " + str(edstatus['Cargo']))
+            print("  LegalState: " + edstatus['LegalState'])
             if status_flags.has_lat_long == 1:
                 print("GEO:")
                 print("  Altitude: " + str(edstatus['Altitude']))
@@ -303,7 +204,167 @@ def printstatus():
                 print("  Latitude: " + str(edstatus['Latitude']))
                 print("  Longitude: " + str(edstatus['Longitude']))
                 print("  PlanetRadius: " + str(edstatus['PlanetRadius']))
+                print("  Heading: " + str(edstatus['Heading']))
+            print(" ")
+            print(edstatus)
+            print(" ")
+            print("========== END ==========")
+            '''
+            GuiFocus values:
+                0    NoFocus
+                1    InternalPanel (right hand side)
+                2    ExternalPanel (left hand side)
+                3    CommsPanel (top)
+                4    RolePanel (bottom)
+                5    StationServices
+                6    GalaxyMap
+                7    SystemMap
+                8    Orrery
+                9    FSS mode
+                10   SAA mode
+                11   Codex
 
+            The latitude or longitude need to change by 0.02 degrees to trigger an update when flying,
+            or by 0.0005 degrees when in the SRV.
+            
+            If the bit29 is set, the altitude value is based on the planet’s average radius (used at
+            higher altitudes).
+
+            If the bit29 is not set, the Altitude value is based on a raycast to the actual surface
+            below the ship/srv.
+
+            LegalState: one of:
+                "Clean",
+                "IllegalCargo",
+                "Speeding",
+                "Wanted",
+                "Hostile",
+                "PassengerWanted",
+                "Warrant"
+            '''
+
+
+## GUI
+
+x, y = 0, 0
+
+def startMove(event):
+    global x, y
+    x = event.x
+    y = event.y
+def stopMove(event):
+    global x, y
+    x = None
+    y = None
+def moving(event):
+    global x, y
+    x_ = (event.x_root - x)
+    y_ = (event.y_root - y)
+    root.geometry("+%s+%s" % (x_, y_))
+def frame_mapped(e):
+    root.update_idletasks()
+    root.overrideredirect(True)
+    root.state('normal')
+def minimize(event):
+    root.update_idletasks()
+    root.overrideredirect(False)
+    #root.state('withdrawn')
+    root.state('iconic')
+def exitProgram(event):
+    os._exit(0)
+def hover(event):
+    event.widget.config(bg="red4")
+def unhover(event):
+    event.widget.config(bg="black")
+def hoverMin(event):
+    event.widget.config(bg="grey12")
+def unHoverMin(event):
+    event.widget.config(bg="black")
+
+root = Tk()
+root.title("EDRacer - you navigator and stopwatch")
+root.geometry("700x140")
+root.iconbitmap('favicon.ico')
+root.overrideredirect(True)
+root.attributes('-topmost', True)
+
+borderFrame = Frame(root, width=700, height=140, bg="black")
+borderFrame.pack_propagate(False)
+borderFrame.pack(side=TOP)
+borderFrame.bind("<Button-1>", startMove)
+borderFrame.bind("<ButtonRelease-1>", stopMove)
+borderFrame.bind("<B1-Motion>", moving)
+borderFrame.bind("<Map>", frame_mapped)
+
+close = Label(root, font=("Arial", 11), bg="black", fg="orange", anchor=CENTER, text="X", cursor="hand2")
+close.place(x=680, y=0, width=20, height=20)
+close.bind("<Enter>", hover)
+close.bind("<Leave>", unhover)
+close.bind("<Button-1>", exitProgram)
+
+mute = Label(root, font=("Arial", 11), bg="black", fg="orange", anchor=CENTER, text="M", cursor="hand2")
+mute.place(x=640, y=0, width=20, height=20)
+mute.bind("<Enter>", hoverMin)
+mute.bind("<Leave>", unHoverMin)
+mute.bind("<Button-1>", muteSnd)
+
+stat = Label(root, font=("Arial", 11), bg="black", fg="orange", anchor=CENTER, text="S", cursor="hand2")
+stat.place(x=620, y=0, width=20, height=20)
+stat.bind("<Enter>", hoverMin)
+stat.bind("<Leave>", unHoverMin)
+stat.bind("<Button-1>", printstatus)
+
+holderFrame = Frame(borderFrame, width=700, height=120, bg="black")
+holderFrame.pack_propagate(False)
+holderFrame.pack(side=BOTTOM)
+
+msg1 = StringVar()
+msg1.set("EDRacer")
+lab1 = Label(root,
+            textvariable = msg1,
+            font = ("Courier New", 20),
+            bg = "black",
+            fg = "orange")
+lab1.place(x = 0, y = 20, width = 700, height = 40)
+
+msg2 = StringVar()
+msg2.set("Witaj komandorze")
+lab2 = Label(root,
+            textvariable = msg2,
+            font = ("Courier New", 20),
+            bg = "black",
+            fg = "orange")
+lab2.place(x = 0, y = 60, width = 700, height = 40)
+
+msg3 = StringVar()
+msg3.set("o7")
+lab3 = Label(root,
+            textvariable = msg3,
+            font = ("Courier New", 20),
+            bg = "black",
+            fg = "orange")
+lab3.place(x = 0, y = 100, width = 700, height = 40)
+
+root.update_idletasks()
+
+def msg(line, text):
+    if line == 1:
+        msg1.set(text)
+    elif line == 2:
+        msg2.set(text)
+    elif line == 3:
+        msg3.set(text)
+    root.update()
+
+def guiPause(sec):
+    i = 0
+    sec = sec * 10
+    while i < sec:
+        i = i + 1
+        root.update()
+        time.sleep(0.1)
+        
+## GUI END
 
 ## Lat | Long | Radius | Opis
 ##wpc = 14
@@ -332,7 +393,7 @@ wp = [  [26.8145, -116.2507, 25, "START"],
 ##printstatus()
 ##exit()
 
-##makeSound(0)
+makeSound(0)
 guiPause(5)
 
 c0 = 0
@@ -412,9 +473,9 @@ while c0 == 0:
                     if status_flags.srv_brake == 1 and status_flags.cargo_scoop == 1:
                         ## Restart - zaciągnąć hamulec, otworzyć cargo
                         print('Restart')
-                        msg(1, "##############################")
-                        msg(2, "##############################")
-                        msg(3, "##############################")
+                        msg(1, "###############################")
+                        msg(2, "############ RESET ############")
+                        msg(3, "###############################")
                         lab1.configure(fg="orange")
                         timerstart = 0
                         czas0 = 0
@@ -445,5 +506,3 @@ while c0 == 0:
 
 ##    else:
 ##        print("FIGHTER | ", end='')
-
-
