@@ -439,6 +439,15 @@ wait_for_status_file()
 print("Ok - status jest dostępny")
 guiPause(1)
 
+edstatus = readedstat() ## Odczytanie statusu
+status_flags.as_integer = edstatus['Flags']
+msg(2,"Udaj się na planetę")
+msg(3,wpb)    
+while status_flags.has_lat_long != 1:
+    edstatus = readedstat() ## Odczytanie statusu
+    status_flags.as_integer = edstatus['Flags']
+    guiPause(1)
+    
 while True:
     timerstart = 0
     czas0 = 0
@@ -535,6 +544,7 @@ while True:
                     msg(1, Wskaz)
                     msg(2, "D:{:.0f}m".format(Dist) + " P:{:.0f}/{}".format(c+1, wpc) + " R:{:.0f} ".format(Radius) + czastxt)
                     msg(3, WPname)
+                    guiPause(0.1)
 
     if status_flags.in_srv == 1:                         
         czas = time.time() - timerstart
@@ -617,7 +627,7 @@ while True:
                     if start == 1:
                         czas0 = time.time() - timerstart
                         
-                    if status_flags.landed == 1 and status_flags.cargo_scoop == 1:
+                    if status_flags.landed == 1 and status_flags.night_vision == 1 and status_flags.lights == 1:
                         ## Restart - zaciągnąć hamulec, otworzyć cargo
                         print('Restart')
                         msg(1, "###############################")
@@ -632,7 +642,7 @@ while True:
                         altMem = []
                         altMem.append(edstatus['Altitude'])
                         print("WAIT")
-                        while status_flags.cargo_scoop == 1:
+                        while status_flags.lights == 1:
                             edstatus = readedstat() ## Odczytanie statusu
                             status_flags.as_integer = edstatus['Flags']
                             guiPause(1)
