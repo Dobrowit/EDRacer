@@ -389,17 +389,14 @@ def guiPause(sec):
         
 ## GUI END
 
-def wait_status():
+def wait_for_status_file():
     try:
         plik = open(STATUS_FILE, 'r')
-        if os.stat(STATUS_FILE).st_size > 0: ## czasmi stastus może być pusty
-            edstatus = eval(plik.read())
+        while os.stat(STATUS_FILE).st_size < 100:
+            guiPause(1)
             plik.close()
-        else:
-            edstatus = 0
     except:
-        edstatus = 0
-    return(edstatus)
+        exit()
 
 wpc = 14
 wpb = "Autamkindia A 1 c"
@@ -426,10 +423,12 @@ Fwp = [ [25.5753, -118.7136, 1000, "miejsce lądowania i startu"],
        [26.81168, -116.255188,360, "przelot między wieżami"]]
 
 ##printstatus()
-##exit()
 mute = 0 # czyści śmieci tkintera
-##makeSound(0)
-##guiPause(5)
+makeSound(0)
+print("Czekam na odpalenie gry.")
+wait_for_status_file()
+print("Ok - status jest dostępny")
+guiPause(1)
 
 while True:
     timerstart = 0
@@ -650,3 +649,4 @@ while True:
             edstatus = readedstat() ## Odczytanie statusu
             status_flags.as_integer = edstatus['Flags']
             guiPause(1)
+
