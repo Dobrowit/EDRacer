@@ -9,26 +9,27 @@ from tkinter import *
 import winsound
 
 if os.environ['OS'] == 'Windows_NT':
-##    EDLOG_PATH = "\Saved Games\Frontier Developments\Elite Dangerous\Status.json"
-##    STATUS_FILE = os.environ['HOME'] + EDLOG_PATH
-    STATUS_FILE = "C:\\Users\\Radek\\Saved Games\\Frontier Developments\\Elite Dangerous\\Status.json"
+    EDLOG_PATH = "\\Saved Games\\Frontier Developments\\Elite Dangerous\\Status.json"
+    STATUS_FILE = os.getenv("HOME") + EDLOG_PATH
 else:
     exit()
 
-mute = 0
+#mute = 0
 
 def muteSnd(event):
     global mute
-    print(mute)
     if mute == 0:
         mute = 1
         print("Mute")
+        TKmute.configure(fg="gray")
     else:
         mute = 0
         print("Unmute")
+        TKmute.configure(fg="orange")
         makeSound(7)
 
 def makeSound(event):
+    global mute
     filename = [["thunder.wav"],
                 ["epic-1.wav"],
                 ["epic-2.wav"],
@@ -38,7 +39,8 @@ def makeSound(event):
                 ["go-go-go.wav"],
                 ["blaster-shot.wav"]]
 
-    if event == 0:
+    print(event, filename[event][0])
+    if event == -1:
         seed(time.time())
         val = randint(0, 2)
         fn = filename[val][0]
@@ -204,9 +206,15 @@ def printstatus(event):
                 print("  Latitude: " + str(edstatus['Latitude']))
                 print("  Longitude: " + str(edstatus['Longitude']))
                 print("  PlanetRadius: " + str(edstatus['PlanetRadius']))
-                print("  Heading: " + str(edstatus['Heading']))
             print(" ")
             print(edstatus)
+            print(" ")
+            print("WYLICZONE:")
+            n = namiar(edstatus['Latitude'], edstatus['Longitude'], edstatus['Heading'], TargetLat, TargetLong, edstatus['PlanetRadius'])
+            print("  Target Heading = {}", n[0])
+            print("  Target Dist = {}", n[1])
+            print("  Delta = {}", n[2])
+            print("  Target Lat: {} | Long: {}".format(TargetLat, TargetLong))
             print(" ")
             print("========== END ==========")
             '''
@@ -246,7 +254,7 @@ def printstatus(event):
 
 ## GUI
 
-x, y = 0, 0
+x, y, trans = 0, 0, 0
 
 def startMove(event):
     global x, y
@@ -280,6 +288,15 @@ def hoverMin(event):
     event.widget.config(bg="grey12")
 def unHoverMin(event):
     event.widget.config(bg="black")
+def makeTrans(event):
+    global trans
+    if trans == 0:
+        root.wm_attributes("-transparentcolor", "black")
+        #root.wm_attributes("-disabled", True)
+        trans = 1
+    else:
+        root.wm_attributes("-transparentcolor", "white")
+        trans = 0
 
 root = Tk()
 root.title("EDRacer - you navigator and stopwatch")
@@ -296,23 +313,29 @@ borderFrame.bind("<ButtonRelease-1>", stopMove)
 borderFrame.bind("<B1-Motion>", moving)
 borderFrame.bind("<Map>", frame_mapped)
 
-close = Label(root, font=("Arial", 11), bg="black", fg="orange", anchor=CENTER, text="X", cursor="hand2")
-close.place(x=680, y=0, width=20, height=20)
-close.bind("<Enter>", hover)
-close.bind("<Leave>", unhover)
-close.bind("<Button-1>", exitProgram)
+TKclose = Label(root, font=("Arial", 11), bg="black", fg="orange", anchor=CENTER, text="X", cursor="hand2")
+TKclose.place(x=680, y=0, width=20, height=20)
+TKclose.bind("<Enter>", hover)
+TKclose.bind("<Leave>", unhover)
+TKclose.bind("<Button-1>", exitProgram)
 
-mute = Label(root, font=("Arial", 11), bg="black", fg="orange", anchor=CENTER, text="M", cursor="hand2")
-mute.place(x=640, y=0, width=20, height=20)
-mute.bind("<Enter>", hoverMin)
-mute.bind("<Leave>", unHoverMin)
-mute.bind("<Button-1>", muteSnd)
+TKtrans = Label(root, font=("Arial", 11), bg="black", fg="orange", anchor=CENTER, text="T", cursor="hand2")
+TKtrans.place(x=660, y=0, width=20, height=20)
+TKtrans.bind("<Enter>", hoverMin)
+TKtrans.bind("<Leave>", unHoverMin)
+TKtrans.bind("<Button-1>", makeTrans)
 
-stat = Label(root, font=("Arial", 11), bg="black", fg="orange", anchor=CENTER, text="S", cursor="hand2")
-stat.place(x=620, y=0, width=20, height=20)
-stat.bind("<Enter>", hoverMin)
-stat.bind("<Leave>", unHoverMin)
-stat.bind("<Button-1>", printstatus)
+TKmute = Label(root, font=("Arial", 11), bg="black", fg="orange", anchor=CENTER, text="M", cursor="hand2")
+TKmute.place(x=640, y=0, width=20, height=20)
+TKmute.bind("<Enter>", hoverMin)
+TKmute.bind("<Leave>", unHoverMin)
+TKmute.bind("<Button-1>", muteSnd)
+
+TKstat = Label(root, font=("Arial", 11), bg="black", fg="orange", anchor=CENTER, text="S", cursor="hand2")
+TKstat.place(x=620, y=0, width=20, height=20)
+TKstat.bind("<Enter>", hoverMin)
+TKstat.bind("<Leave>", unHoverMin)
+TKstat.bind("<Button-1>", printstatus)
 
 holderFrame = Frame(borderFrame, width=700, height=120, bg="black")
 holderFrame.pack_propagate(False)
@@ -366,38 +389,49 @@ def guiPause(sec):
         
 ## GUI END
 
-## Lat | Long | Radius | Opis
-##wpc = 14
-##wp = [  [26.7968, -116.2396, 60, "(START) - między dużymi landing padami"],
-##        [26.8008, -116.2684, 90, "(1) - plac za Wieżą-1"],
-##        [26.7972, -116.2864, 90, "(2) - panele słoneczne"],
-##        [26.8059, -116.2872, 25, "(3) - wjazd na duży landing pad i w lewo"],
-##        [26.8158, -116.2884, 25, "(4) - tuż za skrętem w prawo"],
-##        [26.8172, -116.2745, 25, "(5) - prosto do końca, skręt w prawo i pierwszy zjazd po lewej "],
-##        [26.8425, -116.2447, 90, "(6) - objechać działo jonowe"],
-##        [26.8145, -116.2507, 25, "(7) - miń najbliższy panel słoneczny z lewej i dalej prosto"],
-##        [26.8029, -116.2571, 25, "(8) - to będzie ostro w prawo"],
-##        [26.8042, -116.2611, 25, "(9) - koniec gładkiej drogi"],
-##        [26.7960, -116.2665, 25, "(10) - za Wieżą-1 szybka droga"],
-##        [26.7921, -116.2683, 25, "(11) - ostro w lewo"],
-##        [26.7876, -116.2580, 25, "(12) - uwaga na kamienie"],
-##        [26.8214, -116.2618, 50, "(META) - do końca jeszcze 1000 metrów"]]
+def wait_status():
+    try:
+        plik = open(STATUS_FILE, 'r')
+        if os.stat(STATUS_FILE).st_size > 0: ## czasmi stastus może być pusty
+            edstatus = eval(plik.read())
+            plik.close()
+        else:
+            edstatus = 0
+    except:
+        edstatus = 0
+    return(edstatus)
 
-wpc = 5
-wp = [  [26.8145, -116.2507, 25, "START"],
-        [26.8029, -116.2571, 25, "zakręt w prawo"],
-        [26.8042, -116.2611, 25, "zawrotka do tyłu"],
-        [26.8029, -116.2571, 25, "zakręt w lewo"],
-        [26.8145, -116.2507, 30, "META"]]
-    
+wpc = 14
+wpb = "Autamkindia A 1 c"
+wp = [  [26.7968, -116.2396, 60, "miejsce startu jest między dużymi landing padami"],
+        [26.8008, -116.2684, 90, "plac za Wieżą-1"],
+        [26.7972, -116.2864, 90, "panele słoneczne"],
+        [26.8059, -116.2872, 25, "wjazd na duży landing pad i w lewo"],
+        [26.8158, -116.2884, 25, "tuż za skrętem w prawo"],
+        [26.8172, -116.2745, 25, "prosto do końca, skręt w prawo i pierwszy zjazd po lewej "],
+        [26.8425, -116.2447, 90, "objechać działo jonowe"],
+        [26.8145, -116.2507, 25, "miń najbliższy panel słoneczny z lewej i dalej prosto"],
+        [26.8029, -116.2571, 25, "to będzie ostro w prawo"],
+        [26.8042, -116.2611, 25, "koniec gładkiej drogi"],
+        [26.7960, -116.2665, 25, "za Wieżą-1 szybka droga"],
+        [26.7921, -116.2683, 25, "ostro w lewo"],
+        [26.7876, -116.2580, 25, "uwaga na kamienie"],
+        [26.8214, -116.2618, 50, "do końca jeszcze 1000 metrów"]]
+
+altMem = []
+altMem.append(1)
+Fwpc = 2
+Fwpb = "Autamkindia A 1 c"
+Fwp = [ [25.5753, -118.7136, 1000, "miejsce lądowania i startu"],
+       [26.81168, -116.255188,360, "przelot między wieżami"]]
+
 ##printstatus()
 ##exit()
+mute = 0 # czyści śmieci tkintera
+##makeSound(0)
+##guiPause(5)
 
-makeSound(0)
-guiPause(5)
-
-c0 = 0
-while c0 == 0:
+while True:
     timerstart = 0
     czas0 = 0
     hbtrig = 0
@@ -422,13 +456,15 @@ while c0 == 0:
                     Dist = n[1]
                     Delta = n[2]
 
-                    if math.fabs(Delta) < 15:
-                        Wskaz = "||||> {:3.0f} <||||".format(Heading)
+                    if math.fabs(Delta) <= 15:
+                        Wskaz = "||||> {:3.0f} <||||".format(Heading).zfill(3)
                     else:
-                        if Delta < 0:
-                            Wskaz = "----- {:3.0f} >>>>>".format(Heading)
+                        if Delta >= 270 and Delta < 345 or Delta >= -90 and Delta < -15:
+                            Wskaz = "----- {:3.0f} >>>>>".format(Heading).zfill(3)
+                        elif Delta > 15 and Delta <= 90 or Delta <= -270 and Delta >= -345:
+                            Wskaz = "<<<<< {:3.0f} -----".format(Heading).zfill(3)
                         else:
-                            Wskaz = "<<<<< {:3.0f} -----".format(Heading)
+                            Wskaz = "vvvvv {:3.0f} vvvvv".format(Heading).zfill(3)
 
                     if Dist < Radius:
                         Wskaz = ">>>>> VVV <<<<<".format(Heading)
@@ -436,7 +472,7 @@ while c0 == 0:
                     if czas0 < 1:
                         czastxt = ""
                     else:
-                        czastxt = " S: {:.0f} sek.".format(czas0)
+                        czastxt = " T: {:.0f}sek.".format(czas0)
                     
                     if hbtrig == 0 and status_flags.srv_brake == 1 and start == 0 and Dist < Radius:
                         ## Przełącznik od hamulca
@@ -482,27 +518,135 @@ while c0 == 0:
                         hbtrig = 0
                         start = 0
                         c = 0
+                        print("WAIT")
                         while status_flags.cargo_scoop == 1:
                             edstatus = readedstat() ## Odczytanie statusu
                             status_flags.as_integer = edstatus['Flags']
-                            print("WAIT")
                             guiPause(1)
 
                     msg(1, Wskaz)
-                    msg(2, " D:{:.0f}m".format(Dist) + " P:{:.0f}/{}".format(c+1, wpc) + " R:{:.0f} ".format(Radius) + czastxt)
+                    msg(2, "D:{:.0f}m".format(Dist) + " P:{:.0f}/{}".format(c+1, wpc) + " R:{:.0f} ".format(Radius) + czastxt)
                     msg(3, WPname)
-                          
-    czas = time.time() - timerstart
-    lab1.configure(fg="orange")
-    msg(1, "Twój czas to {:.0f} sek.".format(czas))
-    msg(2, stopWatch(czas))
-    msg(3, "Aby kontynuować przełącz cargo scoop")
-    state = status_flags.cargo_scoop
-    while status_flags.cargo_scoop == state:
-        edstatus = readedstat() ## Odczytanie statusu
-        status_flags.as_integer = edstatus['Flags']
-        print("WAIT")
-        guiPause(1)
 
-##    else:
-##        print("FIGHTER | ", end='')
+    if status_flags.in_srv == 1:                         
+        czas = time.time() - timerstart
+        lab1.configure(fg="orange")
+        msg(1, "Twój czas to {:.0f} sek.".format(czas))
+        msg(2, stopWatch(czas))
+        msg(3, "Aby kontynuować przełącz cargo scoop")
+        state = status_flags.cargo_scoop
+        print("WAIT")
+        while status_flags.cargo_scoop == state:
+            edstatus = readedstat() ## Odczytanie statusu
+            status_flags.as_integer = edstatus['Flags']
+            guiPause(1)
+
+    edstatus = readedstat() ## Odczytanie statusu
+    status_flags.as_integer = edstatus['Flags']
+    while  c < Fwpc and status_flags.in_ship == 1:
+        edstatus = readedstat() ## Odczytanie statusu
+        if edstatus != 0:
+            status_flags.as_integer = edstatus['Flags']
+            if edstatus['Flags'] > 0:
+                if status_flags.has_lat_long == 1:
+                    TargetLat = Fwp[c][0]
+                    TargetLong = Fwp[c][1]
+                    Radius = Fwp[c][2]
+                    WPname = Fwp[c][3]
+                    n = namiar(edstatus['Latitude'], edstatus['Longitude'], edstatus['Heading'], TargetLat, TargetLong, edstatus['PlanetRadius'])
+                    Heading = n[0]
+                    Dist = n[1]
+                    Delta = n[2]
+
+                    if math.fabs(Delta) <= 15:
+                        Wskaz = "||||> {:3.0f} <||||".format(Heading).zfill(3)
+                    else:
+                        if Delta >= 270 and Delta < 345 or Delta >= -90 and Delta < -15:
+                            Wskaz = "----- {:3.0f} >>>>>".format(Heading).zfill(3)
+                        elif Delta > 15 and Delta <= 90 or Delta <= -270 and Delta >= -345:
+                            Wskaz = "<<<<< {:3.0f} -----".format(Heading).zfill(3)
+                        else:
+                            Wskaz = "vvvvv {:3.0f} vvvvv".format(Heading).zfill(3)
+
+                    if Dist < Radius:
+                        Wskaz = ">>>>> VVV <<<<<".format(Heading)
+                  
+                    if czas0 < 1:
+                        czastxt = ""
+                    else:
+                        czastxt = " T: {:.0f}sek.".format(czas0)
+                    
+                    if hbtrig == 0 and status_flags.landed == 1 and start == 0 and Dist < Radius:
+                        ## Przełącznik od lądowania
+                        print('Przełącznik od lądowania')
+                        lab1.configure(fg="red")
+                        hbtrig = 1
+                        ## makeSound(3)
+                        
+                    if start == 1 and Dist <= Radius:
+                        ## Następny punkt
+                        print('Następny punkt')
+                        c = c + 1
+                        if c - 1 == 0:
+                            makeSound(6) # START
+                            print("START")
+                        elif c == Fwpc:
+                            makeSound(5) # META
+                            print("META")
+                        else:
+                            makeSound(4) # KOLEJNY PKT.
+                            print("KOLEJNY PKT.")
+
+                    if c == 0 and hbtrig == 1 and status_flags.landed == 0 and start == 0 and Dist < Radius:    
+                        ## Stoper startuje
+                        print('Stoper startuje')
+                        lab1.configure(fg="green")
+                        timerstart = time.time()
+                        start=1
+                        hbtrig=0
+                        altMem = []
+                        
+                    if start == 1:
+                        czas0 = time.time() - timerstart
+                        
+                    if status_flags.landed == 1 and status_flags.cargo_scoop == 1:
+                        ## Restart - zaciągnąć hamulec, otworzyć cargo
+                        print('Restart')
+                        msg(1, "###############################")
+                        msg(2, "############ RESET ############")
+                        msg(3, "###############################")
+                        lab1.configure(fg="orange")
+                        timerstart = 0
+                        czas0 = 0
+                        hbtrig = 0
+                        start = 0
+                        c = 0
+                        altMem = []
+                        altMem.append(edstatus['Altitude'])
+                        print("WAIT")
+                        while status_flags.cargo_scoop == 1:
+                            edstatus = readedstat() ## Odczytanie statusu
+                            status_flags.as_integer = edstatus['Flags']
+                            guiPause(1)
+                            
+                    altMem.append(edstatus['Altitude'])
+                    altMax = max(altMem)
+                    altMin = min(altMem)
+                    altSre = sum(altMem) / len(altMem)
+                    msg(1, Wskaz)
+                    msg(2, "D:{:.0f}m".format(Dist) + " MAX:{}m ŚR:{:.0f}m".format(altMax, altSre) + czastxt)
+                    msg(3, WPname)
+                    guiPause(1)
+
+    if status_flags.in_ship==1 == 1:                         
+        czas = time.time() - timerstart
+        lab1.configure(fg="orange")
+        msg(1, "Twój czas to {:.0f} sek.".format(czas))
+        msg(2, stopWatch(czas))
+        msg(3, "Wysokość [m]: min:{} max:{} średnia:{}".format(altMin, altMax, altSre))
+        state = status_flags.cargo_scoop
+        print("WAIT")
+        while status_flags.cargo_scoop == state:
+            edstatus = readedstat() ## Odczytanie statusu
+            status_flags.as_integer = edstatus['Flags']
+            guiPause(1)
