@@ -10,7 +10,9 @@ import winsound
 
 if os.environ['OS'] == 'Windows_NT':
     EDLOG_PATH = "\\Saved Games\\Frontier Developments\\Elite Dangerous\\Status.json"
-    STATUS_FILE = os.getenv("HOME") + EDLOG_PATH
+    STATUS_FILE = os.getenv("HOMEDRIVE") + os.getenv("HOMEPATH") + EDLOG_PATH
+    print("Plik statusu:")
+    print(STATUS_FILE)
 else:
     exit()
 
@@ -393,8 +395,15 @@ def wait_for_status_file():
     try:
         plik = open(STATUS_FILE, 'r')
         while os.stat(STATUS_FILE).st_size < 100:
-            guiPause(1)
             plik.close()
+            msg(3,"-")
+            guiPause(0.1)
+            msg(3,"\\")
+            guiPause(0.1)
+            msg(3,"|")
+            guiPause(0.1)
+            msg(3,"/")
+            guiPause(0.1)
     except:
         exit()
 
@@ -642,11 +651,10 @@ while True:
         lab1.configure(fg="orange")
         msg(1, "Twój czas to {:.0f} sek.".format(czas))
         msg(2, stopWatch(czas))
-        msg(3, "Wysokość [m]: min:{} max:{} średnia:{}".format(altMin, altMax, altSre))
+        msg(3, "Wysokość [m]: min:{} max:{} średnia:{:.0f}".format(altMin, altMax, altSre))
         state = status_flags.cargo_scoop
         print("WAIT")
         while status_flags.cargo_scoop == state:
             edstatus = readedstat() ## Odczytanie statusu
             status_flags.as_integer = edstatus['Flags']
             guiPause(1)
-
