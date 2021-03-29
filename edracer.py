@@ -5,7 +5,8 @@ import ctypes
 import math
 from random import seed
 from random import randint
-from tkinter import *
+#from tkinter import *
+import tkinter
 import winsound
 
 if os.environ['OS'] == 'Windows_NT':
