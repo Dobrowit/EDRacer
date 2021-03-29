@@ -1,5 +1,5 @@
 import os
-import sys 
+import sys
 import time
 import ctypes
 import math
@@ -59,7 +59,7 @@ c_uint32 = ctypes.c_uint32
 class StatusFlagsBits(ctypes.LittleEndianStructure):
 # How to define a bit-field structure in Python:
 # https://wiki.python.org/moin/BitManipulation
-# Definitions of bits 
+# Definitions of bits
 # https://forums.frontier.co.uk/threads/journal-docs-for-v3-7-fleet-carriers-beta.540745/
     _fields_ = [("docked",          c_uint8, 1),
                 ("landed",          c_uint8, 1),
