@@ -16,7 +16,7 @@ if os.environ['OS'] == 'Windows_NT':
 else:
     exit()
 
-#mute = 0
+mute = 0
 
 def muteSnd(event):
     global mute
